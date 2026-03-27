@@ -11,26 +11,26 @@ function docToSerializedRace(
     slug: data.slug,
     name: data.name,
     date: data.date.toDate().toISOString(),
-    dateEnd: data.dateEnd?.toDate().toISOString(),
+    dateEnd: data.dateEnd?.toDate().toISOString() ?? null,
     city: data.city,
     state: data.state,
-    venue: data.venue,
+    venue: data.venue ?? null,
     lat: data.location.latitude,
     lng: data.location.longitude,
     distances: data.distances,
     terrain: data.terrain,
-    routeDescription: data.routeDescription,
-    elevationGain: data.elevationGain,
+    routeDescription: data.routeDescription ?? null,
+    elevationGain: data.elevationGain ?? null,
     organizerName: data.organizerName,
-    organizerWebsite: data.organizerWebsite,
-    registrationUrl: data.registrationUrl,
+    organizerWebsite: data.organizerWebsite ?? null,
+    registrationUrl: data.registrationUrl ?? null,
     registrationStatus: data.registrationStatus,
-    registrationOpens: data.registrationOpens?.toDate().toISOString(),
-    registrationCloses: data.registrationCloses?.toDate().toISOString(),
+    registrationOpens: data.registrationOpens?.toDate().toISOString() ?? null,
+    registrationCloses: data.registrationCloses?.toDate().toISOString() ?? null,
     eventStatus: data.eventStatus,
-    editionNumber: data.editionNumber,
-    photos: data.photos,
-    description: data.description,
+    editionNumber: data.editionNumber ?? null,
+    photos: data.photos ?? null,
+    description: data.description ?? null,
   };
 }
 
@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get("q")?.toLowerCase().trim() ?? "";
   const type = searchParams.get("type") as RaceType | null;
   const state = searchParams.get("state");
+  const limitParam = parseInt(searchParams.get("limit") || "0", 10);
 
   try {
     const db = getAdminDb();
@@ -70,7 +71,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return Response.json({ races, total: races.length });
+    const finalRaces = limitParam > 0 ? races.slice(0, limitParam) : races;
+    return Response.json({ races: finalRaces, total: races.length });
   } catch (err: unknown) {
     const error = err as Error;
     console.error("Race search error:", error.message);
