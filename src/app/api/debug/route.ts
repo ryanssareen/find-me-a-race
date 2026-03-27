@@ -3,14 +3,17 @@ import { getAdminDb } from "@/lib/firebase/admin";
 export async function GET() {
   try {
     const db = getAdminDb();
-    const snapshot = await db.collection("races").limit(3).get();
+    const allSnapshot = await db.collection("races").limit(3).get();
+    const upcomingSnapshot = await db.collection("races").where("eventStatus", "==", "upcoming").limit(3).get();
+    const firstDoc = allSnapshot.docs[0]?.data();
     return Response.json({
       ok: true,
-      count: snapshot.size,
-      firstRace: snapshot.docs[0]?.data()?.name ?? "none",
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      hasServiceKey: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-      keyLength: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.length ?? 0,
+      totalCount: allSnapshot.size,
+      upcomingCount: upcomingSnapshot.size,
+      firstRace: firstDoc?.name ?? "none",
+      firstEventStatus: firstDoc?.eventStatus ?? "missing",
+      firstDate: firstDoc?.date?.toDate?.()?.toISOString() ?? String(firstDoc?.date),
+      allFields: firstDoc ? Object.keys(firstDoc) : [],
     });
   } catch (err: unknown) {
     const error = err as Error;
