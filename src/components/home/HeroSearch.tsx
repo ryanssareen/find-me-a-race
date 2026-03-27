@@ -181,7 +181,7 @@ export function HeroSearch() {
           <button
             onClick={handleNearMe}
             disabled={locating}
-            className="mr-2 flex items-center gap-1.5 rounded-xl bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200 disabled:opacity-50 sm:px-4 sm:text-sm"
+            className="flex items-center gap-1.5 rounded-xl bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200 disabled:opacity-50 sm:px-4 sm:text-sm"
             title="Use my location"
           >
             {locating ? (
@@ -193,6 +193,15 @@ export function HeroSearch() {
               </svg>
             )}
             <span className="hidden sm:inline">{locating ? "Locating..." : "Near me"}</span>
+          </button>
+          <button
+            onClick={() => handleSearch()}
+            className="mr-2 flex items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-white transition-colors hover:bg-blue-700 sm:px-4"
+            title="Search"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
           </button>
         </div>
 
