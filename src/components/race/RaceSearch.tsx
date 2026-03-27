@@ -215,22 +215,36 @@ export function RaceSearch({
             onFocus={() => query.trim() && setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search by race name, city, or state..."
-            className="w-full rounded-lg border border-zinc-300 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-lg border border-zinc-300 bg-white py-2.5 pl-10 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
-          {query && (
+          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-2">
+            {query && (
+              <button
+                onClick={() => {
+                  setQuery("");
+                  setShowSuggestions(false);
+                  inputRef.current?.focus();
+                }}
+                className="flex items-center justify-center rounded p-1 text-zinc-400 hover:text-zinc-600"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={() => {
-                setQuery("");
                 setShowSuggestions(false);
-                inputRef.current?.focus();
+                search(query, typeFilter, stateFilter);
               }}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600"
+              className="flex items-center justify-center rounded-md bg-primary px-2 py-1.5 text-white transition-colors hover:bg-primary-dark"
+              title="Search"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </button>
-          )}
+          </div>
 
           {/* Autocomplete dropdown */}
           {showSuggestions && suggestions.length > 0 && (
