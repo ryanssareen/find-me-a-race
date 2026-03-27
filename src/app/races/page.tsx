@@ -1,4 +1,4 @@
-import { getUpcomingRaces } from "@/lib/firebase/races";
+import { getAllRaces } from "@/lib/firebase/races";
 import { RaceSearch } from "@/components/race/RaceSearch";
 import type { Metadata } from "next";
 import type { RaceType } from "@/lib/types/race";
@@ -15,9 +15,9 @@ export default async function RacesPage({
   searchParams: Promise<{ type?: string; state?: string; q?: string }>;
 }) {
   const params = await searchParams;
-  let races: Awaited<ReturnType<typeof getUpcomingRaces>> = [];
+  let races: Awaited<ReturnType<typeof getAllRaces>> = [];
   try {
-    races = await getUpcomingRaces(200);
+    races = await getAllRaces(300);
   } catch {
     // Firebase may not be seeded yet
   }

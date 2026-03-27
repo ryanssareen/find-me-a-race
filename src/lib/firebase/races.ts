@@ -56,9 +56,26 @@ export async function getRaceBySlug(
 export async function getUpcomingRaces(
   limit = 20
 ): Promise<SerializedRace[]> {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
   const snapshot = await getAdminDb()
     .collection(RACES_COLLECTION)
     .where("eventStatus", "==", "upcoming")
+    .where("date", ">=", now)
+    .orderBy("date", "asc")
+    .limit(limit)
+    .get();
+
+  return snapshot.docs.map(docToSerializedRace);
+}
+
+/** Get all races (including past) — for the search/browse page */
+export async function getAllRaces(
+  limit = 200
+): Promise<SerializedRace[]> {
+  const snapshot = await getAdminDb()
+    .collection(RACES_COLLECTION)
     .orderBy("date", "asc")
     .limit(limit)
     .get();

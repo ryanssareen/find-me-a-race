@@ -84,6 +84,16 @@ export function RaceSearch({
             (r) => r.state.toLowerCase() === state.toLowerCase()
           );
         }
+        // Sort: upcoming first (by date asc), then past (by date desc)
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        filtered.sort((a, b) => {
+          const aPast = new Date(a.date) < now;
+          const bPast = new Date(b.date) < now;
+          if (aPast !== bPast) return aPast ? 1 : -1; // upcoming first
+          if (aPast && bPast) return new Date(b.date).getTime() - new Date(a.date).getTime(); // past: most recent first
+          return new Date(a.date).getTime() - new Date(b.date).getTime(); // upcoming: soonest first
+        });
         setRaces(filtered);
         return;
       }
