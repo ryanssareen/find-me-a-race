@@ -3,9 +3,29 @@ import { clsx } from "clsx";
 
 interface RegistrationCTAProps {
   status: RegistrationStatus;
-  url?: string;
-  opensDate?: string;
+  url?: string | null;
+  opensDate?: string | null;
   size?: "sm" | "md";
+}
+
+const GENERIC_DOMAINS = [
+  "indiarunning.com",
+  "bhaagoindia.com",
+  "townscript.com",
+  "allevents.in",
+  "worldsmarathons.com",
+];
+
+function isGenericUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.replace("www.", "");
+    // Check if it's just the landing page of an aggregator
+    const pathname = new URL(url).pathname;
+    const isLandingPage = pathname === "/" || pathname === "";
+    return GENERIC_DOMAINS.some((d) => hostname === d || hostname.endsWith(`.${d}`)) && isLandingPage;
+  } catch {
+    return false;
+  }
 }
 
 const statusConfig: Record<
@@ -37,12 +57,15 @@ export function RegistrationCTA({
   size = "md",
 }: RegistrationCTAProps) {
   const config = statusConfig[status];
-  const isClickable = status === "open" && url;
+  const hasUrl = status === "open" && url;
+  const generic = url ? isGenericUrl(url) : false;
 
   const label =
     status === "not_yet_open" && opensDate
       ? `Registration Opens ${new Date(opensDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-      : config.label;
+      : generic
+        ? "Find Registration"
+        : config.label;
 
   const className = clsx(
     "inline-flex items-center justify-center rounded-lg font-semibold transition-colors",
@@ -50,7 +73,7 @@ export function RegistrationCTA({
     config.className
   );
 
-  if (isClickable) {
+  if (hasUrl) {
     return (
       <a
         href={url}
