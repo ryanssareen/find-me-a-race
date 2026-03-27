@@ -5,6 +5,7 @@ interface RegistrationCTAProps {
   status: RegistrationStatus;
   url?: string | null;
   opensDate?: string | null;
+  raceDate?: string | null;
   size?: "sm" | "md";
 }
 
@@ -19,7 +20,6 @@ const GENERIC_DOMAINS = [
 function isGenericUrl(url: string): boolean {
   try {
     const hostname = new URL(url).hostname.replace("www.", "");
-    // Check if it's just the landing page of an aggregator
     const pathname = new URL(url).pathname;
     const isLandingPage = pathname === "/" || pathname === "";
     return GENERIC_DOMAINS.some((d) => hostname === d || hostname.endsWith(`.${d}`)) && isLandingPage;
@@ -28,8 +28,16 @@ function isGenericUrl(url: string): boolean {
   }
 }
 
+function isRacePast(raceDate: string | null | undefined): boolean {
+  if (!raceDate) return false;
+  const race = new Date(raceDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return race < today;
+}
+
 const statusConfig: Record<
-  RegistrationStatus,
+  RegistrationStatus | "past",
   { label: string; className: string }
 > = {
   open: {
@@ -48,24 +56,39 @@ const statusConfig: Record<
     label: "Sold Out",
     className: "bg-red-100 text-red-700 cursor-not-allowed",
   },
+  past: {
+    label: "Event Already Occurred",
+    className: "bg-zinc-100 text-zinc-400 cursor-not-allowed",
+  },
 };
 
 export function RegistrationCTA({
   status,
   url,
   opensDate,
+  raceDate,
   size = "md",
 }: RegistrationCTAProps) {
-  const config = statusConfig[status];
-  const hasUrl = status === "open" && url;
+  // Override status if race date has passed
+  const isPast = isRacePast(raceDate);
+  const effectiveStatus = isPast ? "past" : status;
+  const config = statusConfig[effectiveStatus];
+  const hasUrl = effectiveStatus === "open" && url;
   const generic = url ? isGenericUrl(url) : false;
 
+  // If status is "open" but no URL, show as unavailable
+  const noLink = effectiveStatus === "open" && !url;
+
   const label =
-    status === "not_yet_open" && opensDate
-      ? `Registration Opens ${new Date(opensDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-      : generic
-        ? "Find Registration"
-        : config.label;
+    isPast
+      ? "Event Already Occurred"
+      : noLink
+        ? "Registration Link Unavailable"
+        : effectiveStatus === "not_yet_open" && opensDate
+          ? `Registration Opens ${new Date(opensDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+          : generic
+            ? "Find Registration"
+            : config.label;
 
   const className = clsx(
     "inline-flex items-center justify-center rounded-lg font-semibold transition-colors",

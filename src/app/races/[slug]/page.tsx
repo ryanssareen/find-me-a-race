@@ -50,9 +50,17 @@ export default async function RaceDetailPage({ params }: RacePageProps) {
 
   const isFirstEdition =
     race.editionNumber === undefined || race.editionNumber === null;
+  const isPast = new Date(race.date) < new Date(new Date().toDateString());
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      {/* Past event banner */}
+      {isPast && (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>This event has already occurred.</strong> Registration is no longer available.
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-zinc-400">
         <Link href="/" className="hover:text-zinc-600">
@@ -92,6 +100,7 @@ export default async function RaceDetailPage({ params }: RacePageProps) {
           status={race.registrationStatus}
           url={race.registrationUrl}
           opensDate={race.registrationOpens}
+          raceDate={race.date}
         />
       </div>
 

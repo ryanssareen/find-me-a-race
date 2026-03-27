@@ -46,6 +46,7 @@ export function RaceCard({ race }: { race: SerializedRace }) {
           status={race.registrationStatus}
           url={race.registrationUrl}
           opensDate={race.registrationOpens}
+          raceDate={race.date}
           size="sm"
         />
       </div>
