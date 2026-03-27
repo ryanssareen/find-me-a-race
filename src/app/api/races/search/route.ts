@@ -71,7 +71,9 @@ export async function GET(request: NextRequest) {
     }
 
     return Response.json({ races, total: races.length });
-  } catch {
-    return Response.json({ races: [], total: 0 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Race search error:", error.message);
+    return Response.json({ races: [], total: 0, error: error.message });
   }
 }
