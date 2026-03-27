@@ -7,12 +7,18 @@ import { RaceCard } from "./RaceCard";
 
 export function RaceSearch({
   initialRaces,
+  defaultType = "",
+  defaultState = "",
+  defaultQuery = "",
 }: {
   initialRaces: SerializedRace[];
+  defaultType?: RaceType | "";
+  defaultState?: string;
+  defaultQuery?: string;
 }) {
-  const [query, setQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<RaceType | "">("");
-  const [stateFilter, setStateFilter] = useState("");
+  const [query, setQuery] = useState(defaultQuery);
+  const [typeFilter, setTypeFilter] = useState<RaceType | "">(defaultType);
+  const [stateFilter, setStateFilter] = useState(defaultState);
   const [races, setRaces] = useState(initialRaces);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);

@@ -1,6 +1,7 @@
 import { getUpcomingRaces } from "@/lib/firebase/races";
 import { RaceSearch } from "@/components/race/RaceSearch";
 import type { Metadata } from "next";
+import type { RaceType } from "@/lib/types/race";
 
 export const metadata: Metadata = {
   title: "Browse Races",
@@ -8,7 +9,12 @@ export const metadata: Metadata = {
     "Browse upcoming running races across India. Filter by distance, date, and location.",
 };
 
-export default async function RacesPage() {
+export default async function RacesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; state?: string; q?: string }>;
+}) {
+  const params = await searchParams;
   let races: Awaited<ReturnType<typeof getUpcomingRaces>> = [];
   try {
     races = await getUpcomingRaces(200);
@@ -20,11 +26,18 @@ export default async function RacesPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-3xl font-bold text-zinc-900">Find a Race</h1>
       <p className="mt-2 text-zinc-500">
-        Search upcoming running races across India
+        {races.length > 0
+          ? `${races.length} upcoming races across India`
+          : "Search upcoming running races across India"}
       </p>
 
       <div className="mt-6">
-        <RaceSearch initialRaces={races} />
+        <RaceSearch
+          initialRaces={races}
+          defaultType={(params.type as RaceType) || ""}
+          defaultState={params.state || ""}
+          defaultQuery={params.q || ""}
+        />
       </div>
     </div>
   );
