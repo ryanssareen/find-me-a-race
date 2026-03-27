@@ -315,8 +315,8 @@ export function RaceSearch({
           className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="relevance">Relevance</option>
-          <option value="date_asc">Date ↑ (soonest first)</option>
-          <option value="date_desc">Date ↓ (latest first)</option>
+          <option value="date_asc">Date (earliest first)</option>
+          <option value="date_desc">Date (newest first)</option>
         </select>
       </div>
 
