@@ -4,27 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { SerializedRace, RaceType } from "@/lib/types/race";
 import { RACE_TYPES, INDIAN_STATES } from "@/lib/utils/constants";
 import { RaceCard } from "./RaceCard";
-
-const MONTHS: Record<string, number> = {
-  january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2,
-  april: 3, apr: 3, may: 4, june: 5, jun: 5, july: 6, jul: 6,
-  august: 7, aug: 7, september: 8, sep: 8, sept: 8, october: 9, oct: 9,
-  november: 10, nov: 10, december: 11, dec: 11,
-};
-
-function parseDate(query: string) {
-  const words = query.split(/\s+/);
-  let month: number | null = null;
-  let year: number | null = null;
-  const remaining: string[] = [];
-  for (const word of words) {
-    const clean = word.replace(/[,]/g, "");
-    if (MONTHS[clean] !== undefined && month === null) month = MONTHS[clean];
-    else if (/^20\d{2}$/.test(clean) && year === null) year = parseInt(clean, 10);
-    else if (!["in", "races", "race", "during", "for", "of", "the"].includes(clean)) remaining.push(word);
-  }
-  return { month, year, remainingQuery: remaining.join(" ").trim() };
-}
+import { parseDate } from "@/lib/utils/date-parser";
 
 export function RaceSearch({
   initialRaces,
