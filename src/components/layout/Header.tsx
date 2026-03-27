@@ -10,7 +10,7 @@ export function Header() {
     <header className="border-b border-zinc-200 bg-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="text-xl font-bold text-primary">
-          FindMeARace
+          Find Me a Race
         </Link>
 
         {/* Desktop nav */}

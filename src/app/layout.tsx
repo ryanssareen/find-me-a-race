@@ -11,8 +11,8 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    default: "FindMeARace — Discover Running Races in India",
-    template: "%s | FindMeARace",
+    default: "Find Me a Race — Discover Running Races in India",
+    template: "%s | Find Me a Race",
   },
   description:
     "Find upcoming running races near you across India. Search by location, distance, and date. 5K, 10K, Half Marathon, Full Marathon, Ultra and more.",
