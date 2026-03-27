@@ -17,9 +17,11 @@ export function RaceSearch({
   defaultState?: string;
   defaultQuery?: string;
 }) {
+  type SortBy = "relevance" | "date_asc" | "date_desc";
   const [query, setQuery] = useState(defaultQuery);
   const [typeFilter, setTypeFilter] = useState<RaceType | "">(defaultType);
   const [stateFilter, setStateFilter] = useState(defaultState);
+  const [sortBy, setSortBy] = useState<SortBy>("relevance");
   const [races, setRaces] = useState(initialRaces);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -43,7 +45,7 @@ export function RaceSearch({
   }, [initialRaces]);
 
   const search = useCallback(
-    async (q: string, type: RaceType | "", state: string) => {
+    async (q: string, type: RaceType | "", state: string, sort: SortBy = "relevance") => {
       // Client-side filter if we have initial data and no server-side needed
       if (initialRaces.length > 0) {
         let filtered = initialRaces;
@@ -84,16 +86,23 @@ export function RaceSearch({
             (r) => r.state.toLowerCase() === state.toLowerCase()
           );
         }
-        // Sort: upcoming first (by date asc), then past (by date desc)
+        // Sort based on user selection
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        filtered.sort((a, b) => {
-          const aPast = new Date(a.date) < now;
-          const bPast = new Date(b.date) < now;
-          if (aPast !== bPast) return aPast ? 1 : -1; // upcoming first
-          if (aPast && bPast) return new Date(b.date).getTime() - new Date(a.date).getTime(); // past: most recent first
-          return new Date(a.date).getTime() - new Date(b.date).getTime(); // upcoming: soonest first
-        });
+        if (sort === "date_asc") {
+          filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        } else if (sort === "date_desc") {
+          filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        } else {
+          // "relevance" — upcoming first (by date asc), then past (by date desc)
+          filtered.sort((a, b) => {
+            const aPast = new Date(a.date) < now;
+            const bPast = new Date(b.date) < now;
+            if (aPast !== bPast) return aPast ? 1 : -1;
+            if (aPast && bPast) return new Date(b.date).getTime() - new Date(a.date).getTime();
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+          });
+        }
         setRaces(filtered);
         return;
       }
@@ -121,10 +130,10 @@ export function RaceSearch({
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      search(query, typeFilter, stateFilter);
+      search(query, typeFilter, stateFilter, sortBy);
     }, 150);
     return () => clearTimeout(debounceRef.current);
-  }, [query, typeFilter, stateFilter, search]);
+  }, [query, typeFilter, stateFilter, sortBy, search]);
 
   // Update suggestions as user types
   useEffect(() => {
@@ -235,7 +244,7 @@ export function RaceSearch({
             <button
               onClick={() => {
                 setShowSuggestions(false);
-                search(query, typeFilter, stateFilter);
+                search(query, typeFilter, stateFilter, sortBy);
               }}
               className="flex items-center justify-center rounded-md bg-primary px-2 py-1.5 text-white transition-colors hover:bg-primary-dark"
               title="Search"
@@ -298,10 +307,21 @@ export function RaceSearch({
             )
           )}
         </select>
+
+        {/* Sort */}
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortBy)}
+          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="relevance">Relevance</option>
+          <option value="date_asc">Date ↑ (soonest first)</option>
+          <option value="date_desc">Date ↓ (latest first)</option>
+        </select>
       </div>
 
       {/* Active filters */}
-      {(query || typeFilter || stateFilter) && (
+      {(query || typeFilter || stateFilter || sortBy !== "relevance") && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-xs text-zinc-400">Filters:</span>
           {query && (
@@ -322,11 +342,18 @@ export function RaceSearch({
               onRemove={() => setStateFilter("")}
             />
           )}
+          {sortBy !== "relevance" && (
+            <FilterChip
+              label={sortBy === "date_asc" ? "Date ↑" : "Date ↓"}
+              onRemove={() => setSortBy("relevance")}
+            />
+          )}
           <button
             onClick={() => {
               setQuery("");
               setTypeFilter("");
               setStateFilter("");
+              setSortBy("relevance");
             }}
             className="text-xs text-primary hover:text-primary-dark"
           >
