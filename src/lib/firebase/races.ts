@@ -1,4 +1,4 @@
-import { adminDb } from "./admin";
+import { getAdminDb } from "./admin";
 import { getGeohashRanges, isWithinRadius, getDistanceKm } from "@/lib/geo/geohash";
 import type {
   SerializedRace,
@@ -43,7 +43,7 @@ function docToSerializedRace(
 export async function getRaceBySlug(
   slug: string
 ): Promise<SerializedRace | null> {
-  const snapshot = await adminDb
+  const snapshot = await getAdminDb()
     .collection(RACES_COLLECTION)
     .where("slug", "==", slug)
     .limit(1)
@@ -56,7 +56,7 @@ export async function getRaceBySlug(
 export async function getUpcomingRaces(
   limit = 20
 ): Promise<SerializedRace[]> {
-  const snapshot = await adminDb
+  const snapshot = await getAdminDb()
     .collection(RACES_COLLECTION)
     .where("eventStatus", "==", "upcoming")
     .orderBy("date", "asc")
@@ -76,7 +76,7 @@ export async function searchRaces(
   if (lat !== undefined && lng !== undefined) {
     races = await queryByLocation(lat, lng, radius);
   } else {
-    const snapshot = await adminDb
+    const snapshot = await getAdminDb()
       .collection(RACES_COLLECTION)
       .where("eventStatus", "==", "upcoming")
       .orderBy("date", "asc")
@@ -123,7 +123,7 @@ async function queryByLocation(
   const ranges = getGeohashRanges(lat, lng, radiusKm);
 
   const queries = ranges.map((range) =>
-    adminDb
+    getAdminDb()
       .collection(RACES_COLLECTION)
       .where("eventStatus", "==", "upcoming")
       .orderBy("geohash")
@@ -149,7 +149,7 @@ async function queryByLocation(
 }
 
 export async function getAllRaceSlugs(): Promise<string[]> {
-  const snapshot = await adminDb
+  const snapshot = await getAdminDb()
     .collection(RACES_COLLECTION)
     .select("slug")
     .get();

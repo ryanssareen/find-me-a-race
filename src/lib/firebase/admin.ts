@@ -16,16 +16,16 @@ function getAdminApp() {
     throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set");
   }
 
-  const serviceAccount = JSON.parse(
-    Buffer.from(serviceAccountKey, "base64").toString("utf-8")
-  ) as ServiceAccount;
+  const decoded = Buffer.from(serviceAccountKey, "base64").toString("utf-8");
+  // Strip control characters that may sneak in from env var encoding
+  const cleaned = decoded.replace(/[\x00-\x09\x0b\x0c\x0e-\x1f]/g, "");
+  const serviceAccount = JSON.parse(cleaned) as ServiceAccount;
 
   return initializeApp({
     credential: cert(serviceAccount),
   });
 }
 
-const adminApp = getAdminApp();
-const adminDb = getFirestore(adminApp);
-
-export { adminApp, adminDb };
+export function getAdminDb() {
+  return getFirestore(getAdminApp());
+}
