@@ -5,6 +5,27 @@ import type { SerializedRace, RaceType } from "@/lib/types/race";
 import { RACE_TYPES, INDIAN_STATES } from "@/lib/utils/constants";
 import { RaceCard } from "./RaceCard";
 
+const MONTHS: Record<string, number> = {
+  january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2,
+  april: 3, apr: 3, may: 4, june: 5, jun: 5, july: 6, jul: 6,
+  august: 7, aug: 7, september: 8, sep: 8, sept: 8, october: 9, oct: 9,
+  november: 10, nov: 10, december: 11, dec: 11,
+};
+
+function parseDate(query: string) {
+  const words = query.split(/\s+/);
+  let month: number | null = null;
+  let year: number | null = null;
+  const remaining: string[] = [];
+  for (const word of words) {
+    const clean = word.replace(/[,]/g, "");
+    if (MONTHS[clean] !== undefined && month === null) month = MONTHS[clean];
+    else if (/^20\d{2}$/.test(clean) && year === null) year = parseInt(clean, 10);
+    else if (!["in", "races", "race", "during", "for", "of", "the"].includes(clean)) remaining.push(word);
+  }
+  return { month, year, remainingQuery: remaining.join(" ").trim() };
+}
+
 export function RaceSearch({
   initialRaces,
   defaultType = "",
@@ -49,13 +70,31 @@ export function RaceSearch({
         const lq = q.toLowerCase().trim();
 
         if (lq) {
-          filtered = filtered.filter(
-            (r) =>
-              r.name.toLowerCase().includes(lq) ||
-              r.city.toLowerCase().includes(lq) ||
-              r.state.toLowerCase().includes(lq) ||
-              r.organizerName.toLowerCase().includes(lq)
-          );
+          const { month, year, remainingQuery } = parseDate(lq);
+
+          // Filter by month/year if detected
+          if (month !== null) {
+            filtered = filtered.filter((r) => {
+              const d = new Date(r.date);
+              return year !== null
+                ? d.getMonth() === month && d.getFullYear() === year
+                : d.getMonth() === month;
+            });
+          } else if (year !== null) {
+            filtered = filtered.filter((r) => new Date(r.date).getFullYear() === year);
+          }
+
+          // Text search on remaining words
+          const textQuery = remainingQuery || (month === null && year === null ? lq : "");
+          if (textQuery) {
+            filtered = filtered.filter(
+              (r) =>
+                r.name.toLowerCase().includes(textQuery) ||
+                r.city.toLowerCase().includes(textQuery) ||
+                r.state.toLowerCase().includes(textQuery) ||
+                r.organizerName.toLowerCase().includes(textQuery)
+            );
+          }
         }
         if (type) {
           filtered = filtered.filter((r) => r.distances.includes(type));
