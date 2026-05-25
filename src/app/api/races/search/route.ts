@@ -95,8 +95,12 @@ export async function GET(request: NextRequest) {
     const finalRaces = limitParam > 0 ? races.slice(0, limitParam) : races;
     return Response.json({ races: finalRaces, total: races.length });
   } catch (err: unknown) {
-    const error = err as Error;
-    console.error("Race search error:", error.message);
-    return Response.json({ races: [], total: 0, error: error.message });
+    // Log full detail server-side; return a generic message + real 500 so
+    // clients can distinguish an error from a genuine "no results".
+    console.error("Race search error:", err);
+    return Response.json(
+      { races: [], total: 0, error: "Failed to fetch races" },
+      { status: 500 }
+    );
   }
 }

@@ -1,6 +1,11 @@
 import { getAdminDb } from "@/lib/firebase/admin";
 
 export async function GET() {
+  // Debug-only endpoint: never exposed in production to avoid leaking internals.
+  if (process.env.NODE_ENV === "production") {
+    return new Response("Not Found", { status: 404 });
+  }
+
   try {
     const db = getAdminDb();
     const allSnapshot = await db.collection("races").limit(3).get();
@@ -16,13 +21,11 @@ export async function GET() {
       allFields: firstDoc ? Object.keys(firstDoc) : [],
     });
   } catch (err: unknown) {
-    const error = err as Error;
-    return Response.json({
-      ok: false,
-      error: error.message,
-      stack: error.stack?.split("\n").slice(0, 5),
-      hasServiceKey: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-      keyLength: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.length ?? 0,
-    });
+    // Log detail server-side; never return stack traces or key material.
+    console.error("Debug route error:", err);
+    return Response.json(
+      { ok: false, error: "Internal error", hasServiceKey: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY },
+      { status: 500 }
+    );
   }
 }
