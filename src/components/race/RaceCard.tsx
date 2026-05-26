@@ -58,8 +58,10 @@ export function RaceCard({ race }: { race: SerializedRace }) {
           status={race.registrationStatus}
           url={race.registrationUrl}
           opensDate={race.registrationOpens}
+          closesDate={race.registrationCloses}
           raceDate={race.date}
           size="sm"
+          showUrgency
         />
       </div>
     </article>
