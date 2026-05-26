@@ -18,8 +18,11 @@ export default async function RacesPage({
   let races: Awaited<ReturnType<typeof getAllRaces>> = [];
   try {
     races = await getAllRaces(300);
-  } catch {
-    // Firebase may not be seeded yet
+  } catch (err) {
+    // Render the empty state gracefully (e.g. Firebase isn't seeded yet) but
+    // do NOT swallow the cause — silent failure here previously masked a
+    // missing FIREBASE_SERVICE_ACCOUNT_KEY for an entire session.
+    console.error("[/races] Failed to load races:", err);
   }
 
   return (
