@@ -4,6 +4,7 @@ import { getRaceBySlug, getAllRaceSlugs } from "@/lib/firebase/races";
 import { formatRaceDate, formatDateRange } from "@/lib/utils/dates";
 import { RaceTypeBadge } from "@/components/race/RaceTypeBadge";
 import { RegistrationCTA } from "@/components/race/RegistrationCTA";
+import { InterestButton } from "@/components/race/InterestButton";
 import Link from "next/link";
 
 interface RacePageProps {
@@ -100,7 +101,9 @@ export default async function RaceDetailPage({ params }: RacePageProps) {
           status={race.registrationStatus}
           url={race.registrationUrl}
           opensDate={race.registrationOpens}
+          closesDate={race.registrationCloses}
           raceDate={race.date}
+          showUrgency={true}
         />
       </div>
 
@@ -110,6 +113,11 @@ export default async function RaceDetailPage({ params }: RacePageProps) {
           <RaceTypeBadge key={d} type={d} />
         ))}
       </div>
+
+      {/* Interest Button (Only for upcoming events) */}
+      {!isPast && (
+        <InterestButton raceId={race.id} initialCount={race.interestCount} />
+      )}
 
       {/* Info grid */}
       <div className="mt-8 grid gap-6 sm:grid-cols-2">

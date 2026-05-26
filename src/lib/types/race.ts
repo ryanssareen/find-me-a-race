@@ -60,6 +60,12 @@ export interface Race {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   source: RaceSource;
+
+  // Curation & Urgency
+  sourceUrl?: string;
+  notes?: string;
+  lastVerified?: Timestamp;
+  interestCount?: number;
 }
 
 export interface RaceSearchParams {
@@ -104,4 +110,10 @@ export interface SerializedRace {
   editionNumber?: number;
   photos?: string[];
   description?: string;
+
+  // Curation & Urgency
+  sourceUrl?: string;
+  notes?: string;
+  lastVerified?: string;
+  interestCount?: number;
 }
