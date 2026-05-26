@@ -5,6 +5,7 @@ import type { SerializedRace, RaceType } from "@/lib/types/race";
 import { RACE_TYPES, INDIAN_STATES } from "@/lib/utils/constants";
 import { RaceCard } from "./RaceCard";
 import { parseDate } from "@/lib/utils/date-parser";
+import { sortByRelevance } from "@/lib/utils/dates";
 
 export function RaceSearch({
   initialRaces,
@@ -87,21 +88,17 @@ export function RaceSearch({
           );
         }
         // Sort based on user selection
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
         if (sort === "date_asc") {
-          filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          filtered = filtered.slice().sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
         } else if (sort === "date_desc") {
-          filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          filtered = filtered.slice().sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
         } else {
-          // "relevance" — upcoming first (by date asc), then past (by date desc)
-          filtered.sort((a, b) => {
-            const aPast = new Date(a.date) < now;
-            const bPast = new Date(b.date) < now;
-            if (aPast !== bPast) return aPast ? 1 : -1;
-            if (aPast && bPast) return new Date(b.date).getTime() - new Date(a.date).getTime();
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          });
+          // "relevance" — upcoming first (date asc), then past (date desc)
+          filtered = sortByRelevance(filtered);
         }
         setRaces(filtered);
         return;

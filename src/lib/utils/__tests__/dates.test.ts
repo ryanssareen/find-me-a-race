@@ -6,6 +6,7 @@ import {
   formatDateRange,
   isUpcoming,
   isWithinRange,
+  sortByRelevance,
 } from "../dates";
 
 describe("getDateRange", () => {
@@ -120,5 +121,57 @@ describe("isWithinRange", () => {
   it("returns true when no bounds specified", () => {
     const date = new Date("2026-06-15");
     expect(isWithinRange(date, undefined, undefined)).toBe(true);
+  });
+});
+
+describe("sortByRelevance", () => {
+  const NOW = new Date("2026-06-10T00:00:00Z").getTime();
+
+  it("places upcoming races first (earliest first), then past races (most recent past first)", () => {
+    const races = [
+      { id: "past-old",    date: "2025-01-01T00:00:00Z" },
+      { id: "future-far",  date: "2027-03-15T00:00:00Z" },
+      { id: "past-recent", date: "2026-05-01T00:00:00Z" },
+      { id: "future-near", date: "2026-07-04T00:00:00Z" },
+    ];
+    const sorted = sortByRelevance(races, NOW).map((r) => r.id);
+    expect(sorted).toEqual([
+      "future-near",  // upcoming, earliest
+      "future-far",   // upcoming
+      "past-recent",  // past, most recent first
+      "past-old",     // past, oldest last
+    ]);
+  });
+
+  it("does not mutate the input array", () => {
+    const races = [
+      { id: "a", date: "2027-01-01T00:00:00Z" },
+      { id: "b", date: "2025-01-01T00:00:00Z" },
+    ];
+    const order = races.map((r) => r.id);
+    sortByRelevance(races, NOW);
+    expect(races.map((r) => r.id)).toEqual(order);
+  });
+
+  it("handles an all-past list (most recent first)", () => {
+    const sorted = sortByRelevance(
+      [
+        { id: "older", date: "2024-01-01T00:00:00Z" },
+        { id: "newer", date: "2026-01-01T00:00:00Z" },
+      ],
+      NOW
+    );
+    expect(sorted.map((r) => r.id)).toEqual(["newer", "older"]);
+  });
+
+  it("handles an all-future list (earliest first)", () => {
+    const sorted = sortByRelevance(
+      [
+        { id: "later",   date: "2028-01-01T00:00:00Z" },
+        { id: "earlier", date: "2026-07-01T00:00:00Z" },
+      ],
+      NOW
+    );
+    expect(sorted.map((r) => r.id)).toEqual(["earlier", "later"]);
   });
 });

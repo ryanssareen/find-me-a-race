@@ -1,5 +1,6 @@
 import { getAllRaces } from "@/lib/firebase/races";
 import { RaceSearch } from "@/components/race/RaceSearch";
+import { sortByRelevance } from "@/lib/utils/dates";
 import type { Metadata } from "next";
 import type { RaceType } from "@/lib/types/race";
 
@@ -17,7 +18,9 @@ export default async function RacesPage({
   const params = await searchParams;
   let races: Awaited<ReturnType<typeof getAllRaces>> = [];
   try {
-    races = await getAllRaces(300);
+    // Sort server-side so the initial HTML already shows upcoming races first,
+    // past races last — instead of relying on a client effect to re-shuffle.
+    races = sortByRelevance(await getAllRaces(300));
   } catch (err) {
     // Render the empty state gracefully (e.g. Firebase isn't seeded yet) but
     // do NOT swallow the cause — silent failure here previously masked a

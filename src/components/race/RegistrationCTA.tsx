@@ -177,8 +177,10 @@ export function RegistrationCTA({
         {ctaElement}
         <span
           className={clsx(
-            "text-xs font-semibold px-2.5 py-1 rounded-full text-center sm:text-right border self-center sm:self-end animate-pulse",
-            urgencyType === "danger" && "bg-red-50 text-red-700 border-red-200",
+            "text-xs font-semibold px-2.5 py-1 rounded-full text-center sm:text-right border self-center sm:self-end",
+            // Only pulse for true danger (≤2 days) — pulsing every card on a
+            // 200-race list would be visually chaotic.
+            urgencyType === "danger" && "bg-red-50 text-red-700 border-red-200 animate-pulse",
             urgencyType === "warning" && "bg-amber-50 text-amber-700 border-amber-200",
             urgencyType === "info" && "bg-blue-50 text-blue-700 border-blue-200"
           )}

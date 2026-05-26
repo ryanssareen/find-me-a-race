@@ -65,3 +65,23 @@ export function isWithinRange(
 }
 
 export { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, format, parseISO };
+
+/**
+ * Sort by relevance: future races first (earliest first), then past races (most
+ * recent past first). Used in both the server-rendered initial list and the
+ * client-side default sort so they don't drift apart.
+ */
+export function sortByRelevance<T extends { date: string }>(
+  races: readonly T[],
+  now: number = Date.now()
+): T[] {
+  return races.slice().sort((a, b) => {
+    const aTime = new Date(a.date).getTime();
+    const bTime = new Date(b.date).getTime();
+    const aPast = aTime < now;
+    const bPast = bTime < now;
+    if (aPast !== bPast) return aPast ? 1 : -1;
+    if (aPast && bPast) return bTime - aTime;
+    return aTime - bTime;
+  });
+}
