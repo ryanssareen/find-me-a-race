@@ -37,6 +37,10 @@ function docToSerializedRace(
     editionNumber: data.editionNumber ?? null,
     photos: data.photos ?? null,
     description: data.description ?? null,
+    sourceUrl: data.sourceUrl ?? null,
+    notes: data.notes ?? null,
+    lastVerified: data.lastVerified?.toDate().toISOString() ?? null,
+    interestCount: data.interestCount ?? 0,
   };
 }
 
