@@ -47,3 +47,4 @@ firebase-debug.log
 /scratch
 # data dumps (one-off backups, enrichment outputs); regenerable via scripts/backup-races.ts
 /backups
+.env*.local
