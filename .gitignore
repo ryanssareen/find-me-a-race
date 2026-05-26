@@ -42,3 +42,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 firebase-debug.log
+
+# agent working files
+/scratch
+# data dumps (one-off backups, enrichment outputs); regenerable via scripts/backup-races.ts
+/backups
