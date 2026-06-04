@@ -49,7 +49,7 @@ export function RaceCard({ race }: { race: SerializedRace }) {
               Completed
             </span>
           ) : isFirstEdition ? (
-            <span className="shrink-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+            <span className="shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
               New
             </span>
           ) : null}
