@@ -18,26 +18,32 @@ export default async function RacesPage({
   const params = await searchParams;
   let races: Awaited<ReturnType<typeof getAllRaces>> = [];
   try {
-    // Sort server-side so the initial HTML already shows upcoming races first,
-    // past races last — instead of relying on a client effect to re-shuffle.
     races = sortByRelevance(await getAllRaces(300));
   } catch (err) {
-    // Render the empty state gracefully (e.g. Firebase isn't seeded yet) but
-    // do NOT swallow the cause — silent failure here previously masked a
-    // missing FIREBASE_SERVICE_ACCOUNT_KEY for an entire session.
     console.error("[/races] Failed to load races:", err);
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-zinc-900">Find a Race</h1>
-      <p className="mt-2 text-zinc-500">
-        {races.length > 0
-          ? `${races.length} upcoming races across India`
-          : "Search upcoming running races across India"}
-      </p>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden border-b border-border bg-gradient-to-b from-secondary to-background">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Find Your Next Race
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">
+              {races.length > 0
+                ? `Discover ${races.length} races across India`
+                : "Discover upcoming running races across India"}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <div className="mt-6">
+      {/* Main Content */}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <RaceSearch
           initialRaces={races}
           defaultType={(params.type as RaceType) || ""}
