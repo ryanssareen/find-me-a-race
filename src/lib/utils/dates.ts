@@ -34,13 +34,25 @@ export function getDateRange(preset: string): { from: Date; to: Date } {
 
 export function formatRaceDate(date: Date | string): string {
   // Parse as UTC to avoid hydration mismatches between server/client timezones
-  const d = typeof date === "string" ? new Date(date + "T12:00:00Z") : date;
+  // Handle both date-only strings (YYYY-MM-DD) and full ISO strings
+  const d =
+    typeof date === "string"
+      ? date.includes("T")
+        ? parseISO(date)
+        : new Date(date + "T12:00:00Z")
+      : date;
   return format(d, "EEE, d MMM yyyy");
 }
 
 export function formatShortDate(date: Date | string): string {
   // Parse as UTC to avoid hydration mismatches between server/client timezones
-  const d = typeof date === "string" ? new Date(date + "T12:00:00Z") : date;
+  // Handle both date-only strings (YYYY-MM-DD) and full ISO strings
+  const d =
+    typeof date === "string"
+      ? date.includes("T")
+        ? parseISO(date)
+        : new Date(date + "T12:00:00Z")
+      : date;
   return format(d, "d MMM yyyy");
 }
 

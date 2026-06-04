@@ -6,7 +6,10 @@ import { RegistrationCTA } from "./RegistrationCTA";
 
 function isRacePast(dateStr: string): boolean {
   // Parse as UTC noon to avoid timezone-related hydration mismatches
-  const race = new Date(dateStr + "T12:00:00Z");
+  // Handle both date-only strings (YYYY-MM-DD) and full ISO strings
+  const race = dateStr.includes("T")
+    ? new Date(dateStr)
+    : new Date(dateStr + "T12:00:00Z");
   const today = new Date();
   today.setHours(12, 0, 0, 0);
   return race < today;
