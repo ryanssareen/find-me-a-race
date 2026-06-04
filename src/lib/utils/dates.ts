@@ -33,12 +33,14 @@ export function getDateRange(preset: string): { from: Date; to: Date } {
 }
 
 export function formatRaceDate(date: Date | string): string {
-  const d = typeof date === "string" ? parseISO(date) : date;
+  // Parse as UTC to avoid hydration mismatches between server/client timezones
+  const d = typeof date === "string" ? new Date(date + "T12:00:00Z") : date;
   return format(d, "EEE, d MMM yyyy");
 }
 
 export function formatShortDate(date: Date | string): string {
-  const d = typeof date === "string" ? parseISO(date) : date;
+  // Parse as UTC to avoid hydration mismatches between server/client timezones
+  const d = typeof date === "string" ? new Date(date + "T12:00:00Z") : date;
   return format(d, "d MMM yyyy");
 }
 
