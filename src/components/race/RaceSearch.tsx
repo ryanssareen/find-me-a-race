@@ -47,7 +47,6 @@ export function RaceSearch({
 
   const search = useCallback(
     async (q: string, type: RaceType | "", state: string, sort: SortBy = "relevance") => {
-      // Client-side filter if we have initial data and no server-side needed
       if (initialRaces.length > 0) {
         let filtered = initialRaces;
         const lq = q.toLowerCase().trim();
@@ -55,7 +54,6 @@ export function RaceSearch({
         if (lq) {
           const { month, year, remainingQuery } = parseDate(lq);
 
-          // Filter by month/year if detected
           if (month !== null) {
             filtered = filtered.filter((r) => {
               const d = new Date(r.date);
@@ -67,7 +65,6 @@ export function RaceSearch({
             filtered = filtered.filter((r) => new Date(r.date).getFullYear() === year);
           }
 
-          // Text search on remaining words
           const textQuery = remainingQuery || (month === null && year === null ? lq : "");
           if (textQuery) {
             filtered = filtered.filter(
@@ -87,7 +84,6 @@ export function RaceSearch({
             (r) => r.state.toLowerCase() === state.toLowerCase()
           );
         }
-        // Sort based on user selection
         if (sort === "date_asc") {
           filtered = filtered.slice().sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -97,14 +93,12 @@ export function RaceSearch({
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
           );
         } else {
-          // "relevance" — upcoming first (date asc), then past (date desc)
           filtered = sortByRelevance(filtered);
         }
         setRaces(filtered);
         return;
       }
 
-      // Fallback to API if no initial data
       setLoading(true);
       try {
         const params = new URLSearchParams();
@@ -123,7 +117,6 @@ export function RaceSearch({
     [initialRaces]
   );
 
-  // Debounced search
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -132,7 +125,6 @@ export function RaceSearch({
     return () => clearTimeout(debounceRef.current);
   }, [query, typeFilter, stateFilter, sortBy, search]);
 
-  // Update suggestions as user types
   useEffect(() => {
     if (!query.trim()) {
       setSuggestions([]);
@@ -146,7 +138,6 @@ export function RaceSearch({
     setSelectedIdx(-1);
   }, [query]);
 
-  // Close suggestions on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
@@ -189,18 +180,20 @@ export function RaceSearch({
     new Set(initialRaces.map((r) => r.state))
   ).sort();
 
+  const hasFilters = query || typeFilter || stateFilter || sortBy !== "relevance";
+
   return (
-    <div>
-      {/* Search + filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Search input with autocomplete */}
-        <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+    <div className="space-y-6">
+      {/* Search & Filters */}
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+        {/* Search Input */}
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
             <svg
-              className="h-5 w-5 text-zinc-400"
+              className="h-5 w-5 text-muted"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth={1.5}
+              strokeWidth={2}
               stroke="currentColor"
             >
               <path
@@ -220,52 +213,38 @@ export function RaceSearch({
             }}
             onFocus={() => query.trim() && setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search by race name, city, or state..."
-            className="w-full rounded-lg border border-zinc-300 bg-white py-2.5 pl-10 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Search by race name, city, date..."
+            className="w-full rounded-xl border border-border bg-secondary py-3.5 pl-12 pr-12 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
-          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-2">
-            {query && (
-              <button
-                onClick={() => {
-                  setQuery("");
-                  setShowSuggestions(false);
-                  inputRef.current?.focus();
-                }}
-                className="flex items-center justify-center rounded p-1 text-zinc-400 hover:text-zinc-600"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+          {query && (
             <button
               onClick={() => {
+                setQuery("");
                 setShowSuggestions(false);
-                search(query, typeFilter, stateFilter, sortBy);
+                inputRef.current?.focus();
               }}
-              className="flex items-center justify-center rounded-md bg-primary px-2 py-1.5 text-white transition-colors hover:bg-primary-dark"
-              title="Search"
+              className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted hover:text-foreground transition-colors"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </div>
+          )}
 
-          {/* Autocomplete dropdown */}
+          {/* Autocomplete */}
           {showSuggestions && suggestions.length > 0 && (
             <div
               ref={suggestionsRef}
-              className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg"
+              className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-border bg-card shadow-xl"
             >
               {suggestions.map((s, i) => (
                 <button
                   key={s}
                   onClick={() => pickSuggestion(s)}
-                  className={`block w-full px-4 py-2 text-left text-sm ${
+                  className={`block w-full px-4 py-3 text-left transition-colors ${
                     i === selectedIdx
                       ? "bg-primary/10 text-primary"
-                      : "text-zinc-700 hover:bg-zinc-50"
+                      : "text-foreground hover:bg-secondary"
                   }`}
                 >
                   {s}
@@ -275,102 +254,101 @@ export function RaceSearch({
           )}
         </div>
 
-        {/* Distance filter */}
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as RaceType | "")}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          <option value="">All distances</option>
-          {RACE_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-
-        {/* State filter */}
-        <select
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          <option value="">All states</option>
-          {(activeStates.length > 0 ? activeStates : INDIAN_STATES).map(
-            (s) => (
-              <option key={s} value={s}>
-                {s}
+        {/* Filter Row */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as RaceType | "")}
+            className="rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+          >
+            <option value="">All distances</option>
+            {RACE_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
-            )
-          )}
-        </select>
+            ))}
+          </select>
 
-        {/* Sort */}
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          <option value="relevance">Relevance</option>
-          <option value="date_asc">Date (earliest first)</option>
-          <option value="date_desc">Date (newest first)</option>
-        </select>
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+          >
+            <option value="">All states</option>
+            {(activeStates.length > 0 ? activeStates : INDIAN_STATES).map(
+              (s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              )
+            )}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortBy)}
+            className="rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+          >
+            <option value="relevance">Relevance</option>
+            <option value="date_asc">Date (earliest)</option>
+            <option value="date_desc">Date (latest)</option>
+          </select>
+
+          {hasFilters && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setTypeFilter("");
+                setStateFilter("");
+                setSortBy("relevance");
+              }}
+              className="ml-auto flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear filters
+            </button>
+          )}
+        </div>
+
+        {/* Active Filters */}
+        {hasFilters && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {query && (
+              <FilterChip label={`"${query}"`} onRemove={() => setQuery("")} />
+            )}
+            {typeFilter && (
+              <FilterChip label={typeFilter} onRemove={() => setTypeFilter("")} />
+            )}
+            {stateFilter && (
+              <FilterChip label={stateFilter} onRemove={() => setStateFilter("")} />
+            )}
+            {sortBy !== "relevance" && (
+              <FilterChip
+                label={sortBy === "date_asc" ? "Date (earliest)" : "Date (latest)"}
+                onRemove={() => setSortBy("relevance")}
+              />
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Active filters */}
-      {(query || typeFilter || stateFilter || sortBy !== "relevance") && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-zinc-400">Filters:</span>
-          {query && (
-            <FilterChip
-              label={`"${query}"`}
-              onRemove={() => setQuery("")}
-            />
-          )}
-          {typeFilter && (
-            <FilterChip
-              label={typeFilter}
-              onRemove={() => setTypeFilter("")}
-            />
-          )}
-          {stateFilter && (
-            <FilterChip
-              label={stateFilter}
-              onRemove={() => setStateFilter("")}
-            />
-          )}
-          {sortBy !== "relevance" && (
-            <FilterChip
-              label={sortBy === "date_asc" ? "Date ↑" : "Date ↓"}
-              onRemove={() => setSortBy("relevance")}
-            />
-          )}
-          <button
-            onClick={() => {
-              setQuery("");
-              setTypeFilter("");
-              setStateFilter("");
-              setSortBy("relevance");
-            }}
-            className="text-xs text-primary hover:text-primary-dark"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
-
       {/* Results */}
-      <div className="mt-6">
+      <div>
         {loading ? (
-          <div className="py-16 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-primary" />
-            <p className="mt-3 text-sm text-zinc-400">Searching...</p>
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-border border-t-primary" />
+            <p className="mt-4 text-sm text-muted">Finding races...</p>
           </div>
         ) : races.length > 0 ? (
           <>
-            <p className="mb-4 text-sm text-zinc-500">
-              {races.length} race{races.length !== 1 ? "s" : ""} found
-            </p>
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-sm text-muted">
+                <span className="font-semibold text-foreground">{races.length}</span>{" "}
+                {races.length === 1 ? "race" : "races"} found
+              </p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {races.map((race) => (
                 <RaceCard key={race.id} race={race} />
@@ -378,26 +356,26 @@ export function RaceSearch({
             </div>
           </>
         ) : (
-          <div className="rounded-xl border border-dashed border-zinc-300 py-16 text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-zinc-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-              />
-            </svg>
-            <p className="mt-4 text-lg font-medium text-zinc-500">
-              No races found
-            </p>
-            <p className="mt-1 text-sm text-zinc-400">
-              {query || typeFilter || stateFilter
-                ? "Try adjusting your search or filters."
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-24">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+              <svg
+                className="h-8 w-8 text-muted"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </div>
+            <p className="mt-6 text-lg font-semibold text-foreground">No races found</p>
+            <p className="mt-2 text-sm text-muted">
+              {hasFilters
+                ? "Try adjusting your search or filters"
                 : "Races are being added — check back soon!"}
             </p>
           </div>
@@ -415,10 +393,10 @@ function FilterChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-medium text-primary">
       {label}
-      <button onClick={onRemove} className="hover:text-primary-dark">
-        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+      <button onClick={onRemove} className="hover:text-primary/80 transition-colors">
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
