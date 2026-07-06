@@ -7,6 +7,8 @@ const BADGE_STYLES: Record<RaceType, string> = {
   "Half Marathon": "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
   "Full Marathon": "bg-orange-100 text-orange-700 border-orange-200 dark:bg-primary/10 dark:text-primary dark:border-primary/20",
   "Ultra": "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20",
+  "Fun Run": "bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-500/10 dark:text-pink-400 dark:border-pink-500/20",
+  "Stadium Run": "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20",
 };
 
 export function RaceTypeBadge({ type }: { type: RaceType }) {
