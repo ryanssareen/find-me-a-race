@@ -1,5 +1,11 @@
 import type { RaceType } from "@/lib/types/race";
 
+export const SITE_NAME = "Find Me a Race";
+
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://find-me-a-race.vercel.app"
+).replace(/\/$/, "");
+
 export const RACE_TYPES: RaceType[] = [
   "5K",
   "10K",

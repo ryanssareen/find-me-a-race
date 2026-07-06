@@ -5,7 +5,14 @@ import { formatRaceDate, formatDateRange } from "@/lib/utils/dates";
 import { RaceTypeBadge } from "@/components/race/RaceTypeBadge";
 import { RegistrationCTA } from "@/components/race/RegistrationCTA";
 import { InterestButton } from "@/components/race/InterestButton";
+import { SITE_URL } from "@/lib/utils/constants";
 import Link from "next/link";
+
+const SCHEMA_EVENT_STATUS: Record<string, string> = {
+  upcoming: "https://schema.org/EventScheduled",
+  completed: "https://schema.org/EventScheduled",
+  cancelled: "https://schema.org/EventCancelled",
+};
 
 interface RacePageProps {
   params: Promise<{ slug: string }>;
@@ -24,6 +31,9 @@ export async function generateMetadata({
   return {
     title: race.name,
     description: `${race.name} — ${race.distances.join(", ")} on ${formatRaceDate(race.date)} in ${race.city}, ${race.state}. Find details and register.`,
+    alternates: {
+      canonical: `/races/${race.slug}`,
+    },
     openGraph: {
       title: race.name,
       description: `${race.distances.join(", ")} race in ${race.city}, ${race.state}`,
@@ -53,8 +63,62 @@ export default async function RaceDetailPage({ params }: RacePageProps) {
     race.editionNumber === undefined || race.editionNumber === null;
   const isPast = new Date(race.date) < new Date(new Date().toDateString());
 
+  const eventJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: race.name,
+    startDate: race.date,
+    endDate: race.dateEnd ?? race.date,
+    eventStatus: SCHEMA_EVENT_STATUS[race.eventStatus],
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    url: `${SITE_URL}/races/${race.slug}`,
+    description:
+      race.description ??
+      `${race.distances.join(", ")} race in ${race.city}, ${race.state}.`,
+    location: {
+      "@type": "Place",
+      name: race.venue ?? `${race.city}, ${race.state}`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: race.city,
+        addressRegion: race.state,
+        addressCountry: "IN",
+      },
+      ...(race.lat && race.lng
+        ? {
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: race.lat,
+              longitude: race.lng,
+            },
+          }
+        : {}),
+    },
+    organizer: {
+      "@type": "Organization",
+      name: race.organizerName,
+      ...(race.organizerWebsite ? { url: race.organizerWebsite } : {}),
+    },
+    ...(race.registrationUrl
+      ? {
+          offers: {
+            "@type": "Offer",
+            url: race.registrationUrl,
+            availability:
+              race.registrationStatus === "open"
+                ? "https://schema.org/InStock"
+                : "https://schema.org/SoldOut",
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+      />
       {/* Past event banner */}
       {isPast && (
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

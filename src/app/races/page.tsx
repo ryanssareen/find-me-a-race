@@ -7,7 +7,10 @@ import type { RaceType } from "@/lib/types/race";
 export const metadata: Metadata = {
   title: "Browse Races",
   description:
-    "Browse upcoming running races across India. Filter by distance, date, and location.",
+    "Browse and discover upcoming running races across India — marathons, half marathons, 10Ks, 5Ks and ultras. Filter by distance, date, and location.",
+  alternates: {
+    canonical: "/races",
+  },
 };
 
 export default async function RacesPage({
